@@ -235,5 +235,6 @@ MIT
 
 Built by **Gul Ahmed** — learning Web3 development by building production-grade projects.
 
-- GitHub: [@YOUR_USERNAME](https://github.com/YOUR_USERNAME)
-- Twitter/X: [@YOUR_HANDLE](https://twitter.com/YOUR_HANDLE)
+- GitHub: [@GulAhmedshah](https://github.com/GulAhmedshah)
+- Twitter/X: [@gadev360](https://x.com/gadev360)
+- LInkedIn : [@gul-ahmed-96220a358](www.linkedin.com/in/gul-ahmed-96220a358)
