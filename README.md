@@ -237,4 +237,4 @@ Built by **Gul Ahmed** — learning Web3 development by building production-grad
 
 - GitHub: [@GulAhmedshah](https://github.com/GulAhmedshah)
 - Twitter/X: [@gadev360](https://x.com/gadev360)
-- LInkedIn : [@gul-ahmed-96220a358](www.linkedin.com/in/gul-ahmed-96220a358)
+- LInkedIn : [@gul-ahmed-96220a358](https://www.linkedin.com/in/gul-ahmed-96220a358)
