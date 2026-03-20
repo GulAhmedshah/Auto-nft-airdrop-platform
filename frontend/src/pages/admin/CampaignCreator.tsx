@@ -33,7 +33,7 @@ const S = {
 interface FormState {
   name:             string
   contractAddress:  string
-  tokenType:        'ERC721' | 'ERC1155'
+  tokenType:        'ERC721' | 'ERC1155' //string ERC721
   distributionType: 'Direct' | 'Merkle'
   tokenId:          string   // ERC-1155 only for Direct
   scheduledAt:      string   // datetime-local input value
