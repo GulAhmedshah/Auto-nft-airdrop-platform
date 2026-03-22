@@ -88,18 +88,19 @@ router.post('/', requireAuth, async (req: Request, res: Response) => {
   if (distributionType === 'Direct') {
     const shouldExecuteNow = !scheduledAt || new Date(scheduledAt) <= new Date()
     if (shouldExecuteNow) {
-      try {
-        // Try BullMQ first
-        const { enqueueCampaign } = await import('../jobs/airdropWorker')
-        const controllerAddress   = process.env.CONTROLLER_ADDRESS ?? ''
-        const chainId             = parseInt(process.env.CHAIN_ID ?? '11155111')
-        await enqueueCampaign(campaign, controllerAddress, chainId)
-        console.log(`Campaign queued via BullMQ: ${campaign.name}`)
-      } catch {
-        // Fall back to in-memory simulation if Redis not available
-        console.warn('BullMQ unavailable — using in-memory simulation')
-        simulateCampaign(campaign)
-      }
+      // try {
+      //   // Try BullMQ first
+      //   const { enqueueCampaign } = await import('../jobs/airdropWorker')
+      //   const controllerAddress   = process.env.CONTROLLER_ADDRESS ?? ''
+      //   const chainId             = parseInt(process.env.CHAIN_ID ?? '11155111')
+      //   await enqueueCampaign(campaign, controllerAddress, chainId)
+      //   console.log(`Campaign queued via BullMQ: ${campaign.name}`)
+      // } catch {
+      //   // Fall back to in-memory simulation if Redis not available
+      //   console.warn('BullMQ unavailable — using in-memory simulation')
+      //   simulateCampaign(campaign)
+      // }
+      simulateCampaign(campaign)
     }
   }
 
