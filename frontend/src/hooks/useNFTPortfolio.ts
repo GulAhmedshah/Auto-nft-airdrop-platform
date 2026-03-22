@@ -1,25 +1,6 @@
 // frontend/src/hooks/useNFTPortfolio.ts
-// ─────────────────────────────────────────────────────────────────────────────
-// useNFTPortfolio — fetches all NFTs owned by the connected wallet
-//
-// ── How it works ─────────────────────────────────────────────────────────────
-//
-//   For ERC-721:
-//     1. Call balanceOf(address) → how many tokens owned
-//     2. Call tokenOfOwnerByIndex(address, i) for each index → get token IDs
-//     3. Call tokenURI(tokenId) for each token → get metadata URI
-//
-//   For ERC-1155:
-//     1. We know token IDs from our deployed collections
-//     2. Call balanceOf(address, tokenId) for each known ID
-//     3. Call uri(tokenId) for metadata URI
-//
-//   Multicall: batch all these calls into one RPC request — much faster
-//   than making individual calls (avoids N round trips).
-// ─────────────────────────────────────────────────────────────────────────────
-
 import { useState, useEffect, useCallback } from 'react'
-import { useAccount, useChainId, usePublicClient } from 'wagmi'
+import { useAccount, usePublicClient }      from 'wagmi'
 
 export interface OwnedNFT {
   contractAddress: string
@@ -38,52 +19,39 @@ export interface UseNFTPortfolioReturn {
   totalCount: number
 }
 
-// Minimal ABIs for reading NFT data
-const ERC721_READ_ABI = [
-  {
-    name: 'balanceOf', type: 'function', stateMutability: 'view',
-    inputs: [{ name: 'owner', type: 'address' }],
-    outputs: [{ type: 'uint256' }],
-  },
-  {
-    name: 'tokenOfOwnerByIndex', type: 'function', stateMutability: 'view',
-    inputs: [{ name: 'owner', type: 'address' }, { name: 'index', type: 'uint256' }],
-    outputs: [{ type: 'uint256' }],
-  },
-  {
-    name: 'tokenURI', type: 'function', stateMutability: 'view',
-    inputs: [{ name: 'tokenId', type: 'uint256' }],
-    outputs: [{ type: 'string' }],
-  },
-  {
-    name: 'name', type: 'function', stateMutability: 'view',
-    inputs: [], outputs: [{ type: 'string' }],
-  },
-] as const
+const BALANCE_ABI = [{
+  name: 'balanceOf', type: 'function', stateMutability: 'view',
+  inputs: [{ name: 'owner', type: 'address' }],
+  outputs: [{ type: 'uint256' }],
+}] as const
 
-const ERC1155_READ_ABI = [
-  {
-    name: 'balanceOf', type: 'function', stateMutability: 'view',
-    inputs: [{ name: 'account', type: 'address' }, { name: 'id', type: 'uint256' }],
-    outputs: [{ type: 'uint256' }],
-  },
-  {
-    name: 'uri', type: 'function', stateMutability: 'view',
-    inputs: [{ name: 'id', type: 'uint256' }],
-    outputs: [{ type: 'string' }],
-  },
-  {
-    name: 'name', type: 'function', stateMutability: 'view',
-    inputs: [], outputs: [{ type: 'string' }],
-  },
-] as const
+const OWNER_ABI = [{
+  name: 'ownerOf', type: 'function', stateMutability: 'view',
+  inputs: [{ name: 'tokenId', type: 'uint256' }],
+  outputs: [{ type: 'address' }],
+}] as const
+
+const URI_ABI = [{
+  name: 'tokenURI', type: 'function', stateMutability: 'view',
+  inputs: [{ name: 'tokenId', type: 'uint256' }],
+  outputs: [{ type: 'string' }],
+}] as const
+
+const SUPPLY_ABI = [{
+  name: 'totalSupply', type: 'function', stateMutability: 'view',
+  inputs: [], outputs: [{ type: 'uint256' }],
+}] as const
+
+const NAME_ABI = [{
+  name: 'name', type: 'function', stateMutability: 'view',
+  inputs: [], outputs: [{ type: 'string' }],
+}] as const
 
 export function useNFTPortfolio(
   contractAddresses: { address: string; type: 'ERC721' | 'ERC1155'; tokenIds?: number[] }[]
 ): UseNFTPortfolioReturn {
-  const { address }   = useAccount()
-  const chainId       = useChainId()
-  const publicClient  = usePublicClient()
+  const { address }  = useAccount()
+  const publicClient = usePublicClient()
 
   const [nfts,      setNfts]      = useState<OwnedNFT[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -96,128 +64,124 @@ export function useNFTPortfolio(
     setError(null)
     const result: OwnedNFT[] = []
 
-    try {
-      for (const contract of contractAddresses) {
-        const addr = contract.address as `0x${string}`
+    for (const contract of contractAddresses) {
+      const addr = contract.address as `0x${string}`
 
+      try {
         if (contract.type === 'ERC721') {
-          // Get collection name
-          let collectionName = 'Unknown Collection'
-          try {
-            collectionName = await publicClient.readContract({
-              address: addr, abi: ERC721_READ_ABI, functionName: 'name',
-            }) as string
-          } catch {}
 
-          // Get balance
           const balance = await publicClient.readContract({
-            address: addr, abi: ERC721_READ_ABI,
-            functionName: 'balanceOf', args: [address],
+            address: addr, abi: BALANCE_ABI,
+            functionName: 'balanceOf', args: [address as `0x${string}`],
           }) as bigint
 
+          console.log('ERC721 balance:', balance.toString())
           if (balance === 0n) continue
 
-          // Get each token ID owned — multicall for efficiency
-          const indexCalls = Array.from({ length: Number(balance) }, (_, i) => ({
-            address:      addr,
-            abi:          ERC721_READ_ABI,
-            functionName: 'tokenOfOwnerByIndex' as const,
-            args:         [address, BigInt(i)] as [`0x${string}`, bigint],
-          }))
+          const supply = await publicClient.readContract({
+            address: addr, abi: SUPPLY_ABI, functionName: 'totalSupply',
+          }) as bigint
 
-          const tokenIds = await publicClient.multicall({
-            contracts: indexCalls,
-          })
+          console.log('Total supply:', supply.toString())
 
-          // Get tokenURIs — multicall again
-          const uriCalls = tokenIds
-            .filter(r => r.status === 'success')
-            .map(r => ({
-              address:      addr,
-              abi:          ERC721_READ_ABI,
-              functionName: 'tokenURI' as const,
-              args:         [r.result as bigint] as [bigint],
-            }))
-
-          const uris = await publicClient.multicall({ contracts: uriCalls })
-
-          tokenIds.forEach((tokenResult, i) => {
-            if (tokenResult.status !== 'success') return
-            const tokenId = Number(tokenResult.result as bigint)
-            const uri     = uris[i]?.status === 'success' ? uris[i].result as string : ''
-
-            result.push({
-              contractAddress: contract.address,
-              tokenId,
-              tokenURI:        uri,
-              collectionName,
-              tokenType:       'ERC721',
-              balance:         1,
-            })
-          })
-
-        } else {
-          // ERC-1155 — check balance for known token IDs
-          const tokenIds = contract.tokenIds ?? [1, 2, 3, 4, 5]
-
-          let collectionName = 'Unknown Collection'
+          let name = 'NFT Collection'
           try {
-            collectionName = await publicClient.readContract({
-              address: addr, abi: ERC1155_READ_ABI, functionName: 'name',
+            name = await publicClient.readContract({
+              address: addr, abi: NAME_ABI, functionName: 'name',
             }) as string
           } catch {}
 
-          const balanceCalls = tokenIds.map(id => ({
-            address:      addr,
-            abi:          ERC1155_READ_ABI,
-            functionName: 'balanceOf' as const,
-            args:         [address, BigInt(id)] as [`0x${string}`, bigint],
-          }))
+          const total = Math.min(Number(supply), 200)
+          let found   = 0
 
-          const balances = await publicClient.multicall({ contracts: balanceCalls })
-
-          for (let i = 0; i < tokenIds.length; i++) {
-            const bal = balances[i]
-            if (bal.status !== 'success' || (bal.result as bigint) === 0n) continue
-
-            const tokenId = tokenIds[i]
-            let uri = ''
+          for (let i = 1; i <= total && found < Number(balance); i++) {
             try {
-              uri = await publicClient.readContract({
-                address: addr, abi: ERC1155_READ_ABI,
-                functionName: 'uri', args: [BigInt(tokenId)],
+              const owner = await publicClient.readContract({
+                address: addr, abi: OWNER_ABI,
+                functionName: 'ownerOf', args: [BigInt(i)],
               }) as string
-            } catch {}
 
-            result.push({
-              contractAddress: contract.address,
-              tokenId,
-              tokenURI:        uri,
-              collectionName,
-              tokenType:       'ERC1155',
-              balance:         Number(bal.result as bigint),
-            })
+              if (owner.toLowerCase() === address.toLowerCase()) {
+                found++
+                let uri = ''
+                try {
+                  uri = await publicClient.readContract({
+                    address: addr, abi: URI_ABI,
+                    functionName: 'tokenURI', args: [BigInt(i)],
+                  }) as string
+                } catch {}
+
+                result.push({
+                  contractAddress: contract.address,
+                  tokenId:         i,
+                  tokenURI:        uri,
+                  collectionName:  name,
+                  tokenType:       'ERC721',
+                  balance:         1,
+                })
+                console.log('Found NFT:', i)
+              }
+            } catch {}
+          }
+
+        } else {
+          const tokenIds = contract.tokenIds ?? [1,2,3,4,5]
+          let name = 'Edition Collection'
+          try {
+            name = await publicClient.readContract({
+              address: addr, abi: NAME_ABI, functionName: 'name',
+            }) as string
+          } catch {}
+
+          for (const id of tokenIds) {
+            try {
+              const bal = await publicClient.readContract({
+                address: addr,
+                abi: [{ name: 'balanceOf', type: 'function', stateMutability: 'view',
+                  inputs: [{ name: 'account', type: 'address' }, { name: 'id', type: 'uint256' }],
+                  outputs: [{ type: 'uint256' }] }] as const,
+                functionName: 'balanceOf',
+                args: [address as `0x${string}`, BigInt(id)],
+              }) as bigint
+
+              if (bal === 0n) continue
+
+              let uri = ''
+              try {
+                uri = await publicClient.readContract({
+                  address: addr,
+                  abi: [{ name: 'uri', type: 'function', stateMutability: 'view',
+                    inputs: [{ name: 'id', type: 'uint256' }],
+                    outputs: [{ type: 'string' }] }] as const,
+                  functionName: 'uri', args: [BigInt(id)],
+                }) as string
+              } catch {}
+
+              result.push({
+                contractAddress: contract.address,
+                tokenId:         id,
+                tokenURI:        uri,
+                collectionName:  name,
+                tokenType:       'ERC1155',
+                balance:         Number(bal),
+              })
+            } catch {}
           }
         }
+      } catch (err) {
+        console.error('Contract error:', addr, err)
+        setError(`Failed to read contract ${addr.slice(0,8)}...`)
       }
-
-      setNfts(result)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load NFTs')
-    } finally {
-      setIsLoading(false)
     }
-  }, [address, publicClient, contractAddresses, chainId])
+
+    console.log('Total NFTs found:', result.length)
+    setNfts(result)
+    setIsLoading(false)
+  }, [address, publicClient, JSON.stringify(contractAddresses)])
 
   useEffect(() => {
     fetchPortfolio()
   }, [fetchPortfolio])
 
-  return {
-    nfts,
-    isLoading,
-    error,
-    refresh:    fetchPortfolio,
-    totalCount: nfts.length,
-  }
+  return { nfts, isLoading, error, refresh: fetchPortfolio, totalCount: nfts.length }
 }

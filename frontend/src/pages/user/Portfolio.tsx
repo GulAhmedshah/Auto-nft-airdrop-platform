@@ -9,17 +9,23 @@ import { AirdropHistory }      from './AirdropHistory'
 // ── Contract addresses to scan ────────────────────────────────────────────────
 // In production: load from backend /api/collections
 // For now: read from environment variables
+// const CONTRACTS = [
+//   {
+//     address: import.meta.env.VITE_NFT721_ADDRESS  ?? '',
+//     type:    'ERC721'  as const,
+//   },
+//   {
+//     address: import.meta.env.VITE_NFT1155_ADDRESS ?? '',
+//     type:    'ERC1155' as const,
+//     tokenIds: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+//   },
+// ].filter(c => c.address !== '')
 const CONTRACTS = [
   {
-    address: import.meta.env.VITE_NFT721_ADDRESS  ?? '',
+    address: '0x42885db4003d6779c66bc2ad4f6dd85a78999c1a',
     type:    'ERC721'  as const,
   },
-  {
-    address: import.meta.env.VITE_NFT1155_ADDRESS ?? '',
-    type:    'ERC1155' as const,
-    tokenIds: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-  },
-].filter(c => c.address !== '')
+]
 
 type Tab = 'nfts' | 'history'
 
