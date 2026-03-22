@@ -9,6 +9,8 @@ import { useAuth }       from './hooks/useAuth'
 import DeployWizard from './pages/admin/DeployWizard'
 import CampaignCreator from './pages/admin/CampaignCreator'
 import CampaignList    from './pages/admin/CampaignList'
+import Portfolio from './pages/user/Portfolio'
+import ClaimPage from './pages/user/ClaimPage'
 
 export default function App() {
   const {
@@ -114,6 +116,8 @@ export default function App() {
       {isAuthenticated && <DeployWizard />} 
       {isAuthenticated && <CampaignList />}
 {isAuthenticated && <CampaignCreator />}
+{isAuthenticated && <Portfolio />}
+{isAuthenticated && <ClaimPage />}
     </div>
 
 
