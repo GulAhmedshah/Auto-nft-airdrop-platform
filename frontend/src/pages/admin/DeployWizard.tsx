@@ -48,7 +48,7 @@ const S = {
   hint:        { fontSize: '12px', color: '#666', marginTop: '4px' } as const,
 }
 
-// ── Form state ──────────────────────────────────────────────────────────────────
+// ── Form state ──────────────────────────────────────────────────────────────
 interface FormData {
   tokenType:  TokenType
   name:       string
@@ -67,10 +67,10 @@ const INITIAL_FORM: FormData = {
   imageFile: null,
 }
 
-// ── Step labels ──────────────────────────────────────────────────────────────────
+// ── Step labels ──────────────────────────────────────────────────────────────
 const STEPS = ['Token Type', 'Collection', 'Metadata', 'Deploy']
 
-// ── Explorer URL helper ───────────────────────────────────────────────────────────
+// ── Explorer URL helper ──────────────────────────────────────────────────────
 function explorerUrl(chainId: number, hash: string, type: 'tx' | 'address' = 'tx'): string {
   const bases: Record<number, string> = {
     1:        'https://etherscan.io',
@@ -82,9 +82,9 @@ function explorerUrl(chainId: number, hash: string, type: 'tx' | 'address' = 'tx
   return `${base}/${type}/${hash}`
 }
 
-// ────────────────────────────────────────────────────────────────────────────────
+// ──────────────���─────────────────────────────────────────────────────────────
 // Main Component
-// ────────────────────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────
 
 export default function DeployWizard() {
   const { isConnected }    = useAccount()
@@ -93,20 +93,20 @@ export default function DeployWizard() {
 
   const [step,       setStep]       = useState(0)
   const [form,       setForm]       = useState<FormData>(INITIAL_FORM)
-  const [formErrors, setFormErrors] = useState<Partial<Record<keyof FormData, string>>>({})}
+  const [formErrors, setFormErrors] = useState<Partial<Record<keyof FormData, string>>>({})
 
   const {
     status, txHash, contractAddress, error,
     deployNFT721, deployNFT1155, uploadToIPFS, reset,
   } = useDeployNFT()
 
-  // ── Field updater ────────────────────────────────────────────────────────────────
+  // ── Field updater ────────────────────────────────────────────────────────
   function setField<K extends keyof FormData>(key: K, value: FormData[K]) {
     setForm(f => ({ ...f, [key]: value }))
     setFormErrors(e => ({ ...e, [key]: undefined }))
   }
 
-  // ── Validation per step ───────────────────────────────────────────────────────────
+  // ── Validation per step ──────────────────────────────────────────────────
   function validateStep(s: number): boolean {
     const errors: Partial<Record<keyof FormData, string>> = {}
 
@@ -133,7 +133,7 @@ export default function DeployWizard() {
     return Object.keys(errors).length === 0
   }
 
-  // ── Next / Back ─────────────────────────────────────────────────────────────────
+  // ── Next / Back ──────────────────────────────────────────────────────────
   function next() {
     if (validateStep(step)) setStep(s => s + 1)
   }
@@ -143,7 +143,7 @@ export default function DeployWizard() {
     setFormErrors({})
   }
 
-  // ── Deploy handler ──────────────────────────────────────────────────────────────
+  // ── Deploy handler ───────────────────────────────────────────────────────
   async function handleDeploy() {
     let baseURI = form.baseURI
 
@@ -174,7 +174,7 @@ export default function DeployWizard() {
     }
   }
 
-  // ── Reset and start over ────────────────────────────────────────────────────────
+  // ── Reset and start over ─────────────────────────────────────────────────
   function handleReset() {
     reset()
     setStep(0)
@@ -182,9 +182,9 @@ export default function DeployWizard() {
     setFormErrors({})
   }
 
-  // ───────────────────────────────────────────────────────────────────────────────
+  // ────────────────────────────────────────────────────────────────────────
   // Render
-  // ───────────────────────────────────────────────────────────────────────────────
+  // ────────────────────────────────────────────────────────────────────────
 
   if (!isConnected) {
     return (
@@ -403,9 +403,9 @@ export default function DeployWizard() {
   )
 }
 
-// ────────────────────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────
 // DeployStatusTracker — shows deploying → mined → done progression
-// ────────────────────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────
 
 interface TrackerProps {
   status:          DeployStatus
