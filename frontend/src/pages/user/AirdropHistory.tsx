@@ -17,10 +17,6 @@ interface Props {
   chainId: number
 }
 
-// Transfer event topics
-const TRANSFER_TOPIC      = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
-const TRANSFER_SINGLE_TOPIC = '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62'
-
 export function AirdropHistory({ address, chainId }: Props) {
   const publicClient = usePublicClient()
   const [events,    setEvents]    = useState<AirdropEvent[]>([])
@@ -36,7 +32,6 @@ export function AirdropHistory({ address, chainId }: Props) {
     setError(null)
 
     try {
-      const paddedAddress = `0x${address.slice(2).padStart(64, '0').toLowerCase()}`
       const result: AirdropEvent[] = []
 
       // Fetch ERC-721 Transfer events where user is recipient (topic[2])

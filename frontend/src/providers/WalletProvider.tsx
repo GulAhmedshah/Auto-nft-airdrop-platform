@@ -1,5 +1,5 @@
 // frontend/src/providers/WalletProvider.tsx
-// ─────────────────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────
 // Root provider that wraps the entire app.
 // Order matters: QueryClientProvider → WagmiProvider → RainbowKitProvider
 //
@@ -8,9 +8,9 @@
 //     internally, so the QueryClient must exist before WagmiProvider mounts.
 //   • WagmiProvider must wrap RainbowKitProvider — RainbowKit reads wallet
 //     state from wagmi's context.
-// ─────────────────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────
 
-import { ReactNode }           from 'react'
+import type { ReactNode }       from 'react'
 import { WagmiProvider }       from 'wagmi'
 import { RainbowKitProvider,
          darkTheme }           from '@rainbow-me/rainbowkit'

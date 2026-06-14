@@ -1,7 +1,8 @@
 // frontend/src/pages/admin/CampaignCreator.tsx
 import { useState, useRef, useCallback } from 'react'
 import axios from 'axios'
-import { parseCSV, generateSampleCSV, ParseResult } from '../../lib/csvParser'
+import type { ParseResult } from '../../lib/csvParser'
+import { parseCSV, generateSampleCSV } from '../../lib/csvParser'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'
 
@@ -21,7 +22,7 @@ const S = {
   btnSec:  { background: 'transparent', color: '#888', border: '1px solid #444', borderRadius: '8px', padding: '12px 24px', cursor: 'pointer', fontSize: '14px' } as const,
   error:   { color: '#ef4444', fontSize: '13px', marginTop: '4px' } as const,
   hint:    { fontSize: '12px', color: '#666', marginTop: '4px' } as const,
-  badge:   (type: 'Direct' | 'Merkle', selected: boolean) => ({
+  badge:   (selected: boolean) => ({
     flex: 1, padding: '16px', borderRadius: '10px', cursor: 'pointer',
     border: `2px solid ${selected ? '#7C3AED' : '#333'}`,
     background: selected ? '#7C3AED15' : '#0f0f0f',
@@ -33,7 +34,7 @@ const S = {
 interface FormState {
   name:             string
   contractAddress:  string
-  tokenType:        'ERC721' | 'ERC1155' //string ERC721
+  tokenType:        'ERC721' | 'ERC1155'
   distributionType: 'Direct' | 'Merkle'
   tokenId:          string   // ERC-1155 only for Direct
   scheduledAt:      string   // datetime-local input value
@@ -99,7 +100,7 @@ export default function CampaignCreator({ onCreated }: Props) {
     URL.revokeObjectURL(url)
   }
 
-  // ── Submit campaign ────────────────────────────────────────────────────────
+  // ── Submit campaign ───────────────────────────────────────────────────────────
   async function handleSubmit() {
     if (!form.name.trim())            return setSubmitError('Campaign name is required')
     if (!form.contractAddress.trim()) return setSubmitError('Contract address is required')
@@ -138,7 +139,7 @@ export default function CampaignCreator({ onCreated }: Props) {
     }
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
+  // ───────────────────────────────────────────────────────────────────────────────
   return (
     <div style={S.page}>
       <div style={S.title}>Create Airdrop Campaign</div>
@@ -187,7 +188,7 @@ export default function CampaignCreator({ onCreated }: Props) {
       <div style={S.card}>
         <div style={S.section}>Distribution Method</div>
         <div style={S.row}>
-          <button style={S.badge('Direct', form.distributionType === 'Direct')}
+          <button style={S.badge(form.distributionType === 'Direct')}
             onClick={() => setField('distributionType', 'Direct')}>
             <div style={{ fontSize: '24px', marginBottom: '6px' }}>📤</div>
             <div style={{ fontWeight: 700, marginBottom: '4px' }}>Direct Airdrop</div>
@@ -195,7 +196,7 @@ export default function CampaignCreator({ onCreated }: Props) {
               Platform pushes tokens to all recipients automatically
             </div>
           </button>
-          <button style={S.badge('Merkle', form.distributionType === 'Merkle')}
+          <button style={S.badge(form.distributionType === 'Merkle')}
             onClick={() => setField('distributionType', 'Merkle')}>
             <div style={{ fontSize: '24px', marginBottom: '6px' }}>🌳</div>
             <div style={{ fontWeight: 700, marginBottom: '4px' }}>Merkle Claim</div>

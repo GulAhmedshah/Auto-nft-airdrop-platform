@@ -1,7 +1,7 @@
 // frontend/src/pages/admin/CampaignList.tsx
 import { useState, useEffect } from 'react'
 import axios                   from 'axios'
-import { CampaignJob }         from '../../hooks/useAirdropJob'
+import type { CampaignJob }    from '../../hooks/useAirdropJob'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'
 

@@ -1,5 +1,5 @@
 // frontend/src/hooks/useDeployNFT.ts
-// ─────────────────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────
 // useDeployNFT — deploys NFT721 or NFT1155 contracts directly from the browser
 //
 // ── How contract deployment works from the browser ───────────────────────────
@@ -18,15 +18,12 @@
 //   The bytecode must come from your compiled contracts.
 //   Run: forge inspect NFT721 bytecode
 //   Paste the output into frontend/src/abis/NFT721.ts as NFT721_BYTECODE
-// ─────────────────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────
 
 import { useState, useCallback }          from 'react'
 import { useDeployContract, usePublicClient,
          useAccount }                     from 'wagmi'
-import { decodeEventLog }                 from 'viem'
 import axios                              from 'axios'
-//import { NFT721_ABI,  NFT721_BYTECODE }   from '../abis/NFT721'
-//import { NFT1155_ABI, NFT1155_BYTECODE }  from '../abis/NFT1155'
 
 import { NFT721_ABI,  NFT721_BYTECODE,
          NFT1155_ABI, NFT1155_BYTECODE }  from '../abis'
@@ -35,7 +32,7 @@ import { NFT721_ABI,  NFT721_BYTECODE,
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+// ── Types ────────────────────────────────────────────────────────────────────
 
 export type TokenType = 'ERC721' | 'ERC1155'
 
@@ -79,7 +76,7 @@ export interface UseDeployNFTReturn {
   reset:           () => void
 }
 
-// ── Hook ──────────────────────────────────────────────────────────────────────
+// ── Hook ────────────────────────────────────────────────────────────────────
 
 export function useDeployNFT(): UseDeployNFTReturn {
   const { address }               = useAccount()
@@ -191,7 +188,7 @@ export function useDeployNFT(): UseDeployNFTReturn {
     }
   }, [address, publicClient, deployContractAsync, saveToBackend])
 
-  // ── Deploy NFT1155 ───────────────────────────────────────────────────────────
+  // ── Deploy NFT1155 ────────────────────────────────────────────────────────────
   const deployNFT1155 = useCallback(async (params: DeployNFT1155Params) => {
     if (!address) { setError('Wallet not connected'); return }
     if (!publicClient) { setError('No public client'); return }

@@ -3,7 +3,6 @@ import { useState }            from 'react'
 import { useAccount, useChainId } from 'wagmi'
 import { useNFTPortfolio }     from '../../hooks/useNFTPortfolio'
 import { NFTCard }             from '../../components/NFTCard'
-import { TransactionLink }     from '../../components/TransactionLink'
 import { AirdropHistory }      from './AirdropHistory'
 
 // ── Contract addresses to scan ────────────────────────────────────────────────
@@ -167,7 +166,7 @@ export default function Portfolio() {
   )
 }
 
-// ── Styles ────────────────────────────────────────────────────────────────────
+// ── Styles ───────────────────────────────────────────────────────────────────────
 const styles = {
   page:         { padding: '32px', maxWidth: '960px', margin: '0 auto', color: '#fff', fontFamily: 'sans-serif' },
   header:       { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' },
